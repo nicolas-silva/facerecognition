@@ -1,0 +1,11 @@
+.bounding-box {
+  position: absolute;
+  box-shadow: inset 0px 0px 0px 3px #149df2;
+  flex-wrap: wrap;
+  display: flex;
+  justify-content: center;
+  cursor: pointer;
+  display: -ms-flexbox;
+  -ms-flex-pack: center;
+  -ms-flex-wrap: wrap;
+}
