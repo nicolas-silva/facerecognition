@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import Particles from "react-particles-js";
-import Clarifai from "clarifai";
 import Navigation from "./components/Navigation/Navigation";
 import Signin from "./components/Signin/Signin";
 import Register from "./components/Register/Register";
@@ -9,10 +8,6 @@ import Rank from "./components/Rank/Rank";
 import ImageLinkForm from "./components/ImageLinkForm/ImageLinkForm";
 import FaceRecognition from "./components/FaceRecognition/FaceRecognition";
 import "./App.css";
-
-const clarifai = new Clarifai.App({
-  apiKey: "85f882a88734452683932b9cd741f482",
-});
 
 const particlesOptions = {
   particles: {
@@ -63,22 +58,24 @@ const particlesOptions = {
   },
 };
 
+const initialState = {
+  input: "",
+  imageUrl: "",
+  box: {},
+  route: "signin",
+  user: {
+    _id: "",
+    name: "",
+    email: "",
+    entries: 0,
+    joined: "",
+  },
+};
+
 class App extends Component {
   constructor() {
     super();
-    this.state = {
-      input: "",
-      imageUrl: "",
-      box: {},
-      route: "signin",
-      user: {
-        id: "",
-        name: "",
-        email: "",
-        entries: 0,
-        joined: "",
-      },
-    };
+    this.state = initialState;
   }
   onInputChange = (event) => {
     this.setState({ input: event.target.value });
@@ -104,21 +101,30 @@ class App extends Component {
   onSubmit = () => {
     console.log(this.state);
     this.setState({ imageUrl: this.state.input });
-    clarifai.models
-      .predict(Clarifai.FACE_DETECT_MODEL, this.state.input)
-      .then((response) => {
+    fetch("http://localhost:3002/image", {
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        input: this.state.input,
+      }),
+    })
+      .then(response => response.json())
+      .then(response => {
         if (response) {
           fetch("http://localhost:3002/image", {
             method: "put",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              id: this.state.user.id,
+              _id: this.state.user._id,
             }),
           })
             .then((response) => response.json())
             .then((entries) => {
-              this.setState(Object.assign(this.state.user, { entries: entries }));
-            });
+              this.setState(
+                Object.assign(this.state.user, { entries: entries })
+              );
+            })
+            .catch(console.log);
         }
         this.displayFaceBox(this.calculateFaceLocation(response));
       })
@@ -127,12 +133,16 @@ class App extends Component {
       });
   };
   onRouteChange = (route) => {
-    this.setState({ route: route });
+    if (route === "signout") {
+      this.setState(initialState);
+    } else {
+      this.setState({ route: route });
+    }
   };
   loadUser = (user) => {
     this.setState({
       user: {
-        id: user.id,
+        _id: user._id,
         name: user.name,
         email: user.email,
         entries: user.entries,

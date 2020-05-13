@@ -7,7 +7,7 @@ class Register extends React.Component {
     this.state = {
       name: "",
       email: "",
-      passwrd: "",
+      password: "",
     };
   }
   onNameChange = (event) => {
@@ -17,7 +17,7 @@ class Register extends React.Component {
     this.setState({ email: event.target.value });
   };
   onPasswordChange = (event) => {
-    this.setState({ passwrd: event.target.value });
+    this.setState({ password: event.target.value });
   };
   onSubmitRegister = () => {
     fetch("http://localhost:3002/register", {
@@ -26,12 +26,13 @@ class Register extends React.Component {
       body: JSON.stringify({
         name: this.state.name,
         email: this.state.email,
-        passwrd: this.state.passwrd,
+        password: this.state.password,
       }),
     })
       .then((response) => response.json())
       .then((user) => {
         if (user) {
+          console.log('saved user', user);
           this.props.loadUser(user);
           this.props.onRouteChange("main");
         }
